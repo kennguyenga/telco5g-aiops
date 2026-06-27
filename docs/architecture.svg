@@ -1,0 +1,162 @@
+<svg viewBox="0 0 1060 800" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#5e9bff"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#f5a623"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#34d399"/>
+    </marker>
+    <style>
+      .card{fill:#131c30;stroke:#243049;stroke-width:1.5;rx:10;}
+      .title{fill:#e9eefb;font-weight:700;}
+      .sub{fill:#8a99b8;font-size:11px;}
+      .port{fill:#5e9bff;font-size:11px;font-weight:700;}
+      .lbl{fill:#8a99b8;font-size:11px;}
+      .lblb{fill:#5e9bff;font-size:11px;font-weight:600;}
+      .lbla{fill:#f5a623;font-size:11px;font-weight:600;}
+      .lblg{fill:#34d399;font-size:11px;font-weight:600;}
+      .nf{fill:#e9eefb;font-weight:700;font-size:13px;}
+      .pill{fill:#0b1120;stroke:#2c3a59;stroke-width:1;}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1060" height="800" fill="#0b1120"/>
+  <text x="40" y="46" class="title" font-size="22">5G AIOps — System Architecture</text>
+  <text x="40" y="68" class="sub" font-size="13">Simulated 5G core · ML failure classifier · multi-provider LLM SRE agent</text>
+
+  <!-- ============ FRONTEND ============ -->
+  <rect x="40" y="92" width="980" height="74" rx="10" class="card"/>
+  <text x="60" y="124" class="title" font-size="15">NOC Console — React + Vite</text>
+  <text x="60" y="146" class="sub">Operations · Inventory · Call flows · Telemetry · Error codes · ML engine · Agent · Chaos lab</text>
+  <rect x="905" y="108" width="96" height="24" rx="6" class="pill"/>
+  <text x="953" y="124" class="port" text-anchor="middle">:5173</text>
+
+  <!-- frontend -> control plane (REST /api/*) -->
+  <line x1="200" y1="166" x2="200" y2="210" stroke="#5e9bff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="430" y1="166" x2="430" y2="210" stroke="#5e9bff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="660" y1="166" x2="660" y2="210" stroke="#5e9bff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="890" y1="166" x2="890" y2="210" stroke="#5e9bff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="535" y="184" class="lblb" text-anchor="middle">REST /api/*  (nginx proxy)</text>
+
+  <!-- ============ CONTROL PLANE ============ -->
+  <text x="40" y="206" class="lbl" font-size="12" font-weight="700">CONTROL PLANE</text>
+
+  <!-- Collector -->
+  <rect x="100" y="212" width="200" height="84" rx="10" class="card"/>
+  <text x="116" y="238" class="title" font-size="14">Collector</text>
+  <rect x="246" y="222" width="44" height="22" rx="6" class="pill"/>
+  <text x="268" y="237" class="port" text-anchor="middle">:9000</text>
+  <text x="116" y="260" class="sub">Scrapes metrics, logs,</text>
+  <text x="116" y="276" class="sub">and traces from every NF</text>
+
+  <!-- Orchestrator -->
+  <rect x="330" y="212" width="200" height="84" rx="10" class="card"/>
+  <text x="346" y="238" class="title" font-size="14">Orchestrator</text>
+  <rect x="476" y="222" width="44" height="22" rx="6" class="pill"/>
+  <text x="498" y="237" class="port" text-anchor="middle">:9001</text>
+  <text x="346" y="260" class="sub">Call flows, topology,</text>
+  <text x="346" y="276" class="sub">fault injection, scenarios</text>
+
+  <!-- ML Engine -->
+  <rect x="560" y="212" width="200" height="84" rx="10" class="card"/>
+  <text x="576" y="238" class="title" font-size="14">ML Engine</text>
+  <rect x="706" y="222" width="44" height="22" rx="6" class="pill"/>
+  <text x="728" y="237" class="port" text-anchor="middle">:9002</text>
+  <text x="576" y="260" class="sub">IsolationForest +</text>
+  <text x="576" y="276" class="sub">rules classifier</text>
+
+  <!-- LLM Agent -->
+  <rect x="790" y="212" width="200" height="84" rx="10" class="card" stroke="#f5a623"/>
+  <text x="806" y="238" class="title" font-size="14">LLM SRE Agent</text>
+  <rect x="936" y="222" width="44" height="22" rx="6" class="pill"/>
+  <text x="958" y="237" class="port" text-anchor="middle">:9003</text>
+  <text x="806" y="260" class="sub">9-tool investigate +</text>
+  <text x="806" y="276" class="sub">remediate loop</text>
+
+  <!-- ML reads collector (routed below the boxes, clear of orchestrator) -->
+  <path d="M 660 296 C 560 330, 400 330, 300 296" fill="none" stroke="#5e9bff" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+  <!-- ============ PROVIDERS ============ -->
+  <rect x="660" y="320" width="360" height="66" rx="10" class="card" stroke="#f5a623"/>
+  <text x="676" y="342" class="lbla">LLM PROVIDERS (pluggable, one agent loop)</text>
+  <rect x="676" y="352" width="78" height="24" rx="12" class="pill" stroke="#34d399"/>
+  <text x="715" y="368" class="lblg" text-anchor="middle">Mock ✓ default</text>
+  <rect x="762" y="352" width="64" height="24" rx="12" class="pill"/>
+  <text x="794" y="368" class="lbl" text-anchor="middle" font-size="11">Gemini</text>
+  <rect x="834" y="352" width="64" height="24" rx="12" class="pill"/>
+  <text x="866" y="368" class="lbl" text-anchor="middle" font-size="11">Ollama</text>
+  <rect x="906" y="352" width="98" height="24" rx="12" class="pill"/>
+  <text x="955" y="368" class="lbl" text-anchor="middle" font-size="11">Anthropic</text>
+  <line x1="890" y1="296" x2="890" y2="320" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrowAmber)"/>
+
+  <!-- agent tool calls down to control plane + core -->
+  <line x1="820" y1="296" x2="430" y2="395" stroke="#f5a623" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#arrowAmber)"/>
+  <text x="585" y="350" class="lbla" text-anchor="middle">tool calls →</text>
+
+  <!-- ============ 5G CORE ============ -->
+  <text x="40" y="430" class="lbl" font-size="12" font-weight="700">SIMULATED 5G CORE</text>
+  <rect x="40" y="438" width="980" height="150" rx="12" fill="#0e1626" stroke="#243049" stroke-width="1.5"/>
+  <text x="58" y="462" class="lblb">nf_common — shared library: app factory · telemetry · fault injection · 25-code 3GPP error catalog · trace context</text>
+
+  <!-- 7 NF boxes -->
+  <g>
+    <!-- NRF -->
+    <rect x="58" y="478" width="124" height="86" rx="9" class="card"/>
+    <text x="120" y="508" class="nf" text-anchor="middle">NRF</text>
+    <text x="120" y="528" class="sub" text-anchor="middle">discovery</text>
+    <text x="120" y="546" class="port" text-anchor="middle">:8001</text>
+    <!-- AUSF -->
+    <rect x="194" y="478" width="124" height="86" rx="9" class="card"/>
+    <text x="256" y="508" class="nf" text-anchor="middle">AUSF</text>
+    <text x="256" y="528" class="sub" text-anchor="middle">auth</text>
+    <text x="256" y="546" class="port" text-anchor="middle">:8002</text>
+    <!-- UDM -->
+    <rect x="330" y="478" width="124" height="86" rx="9" class="card"/>
+    <text x="392" y="508" class="nf" text-anchor="middle">UDM</text>
+    <text x="392" y="528" class="sub" text-anchor="middle">subscribers</text>
+    <text x="392" y="546" class="port" text-anchor="middle">:8003</text>
+    <!-- AMF -->
+    <rect x="466" y="478" width="124" height="86" rx="9" class="card"/>
+    <text x="528" y="508" class="nf" text-anchor="middle">AMF</text>
+    <text x="528" y="528" class="sub" text-anchor="middle">mobility</text>
+    <text x="528" y="546" class="port" text-anchor="middle">:8004</text>
+    <!-- SMF -->
+    <rect x="602" y="478" width="124" height="86" rx="9" class="card"/>
+    <text x="664" y="508" class="nf" text-anchor="middle">SMF</text>
+    <text x="664" y="528" class="sub" text-anchor="middle">sessions</text>
+    <text x="664" y="546" class="port" text-anchor="middle">:8005</text>
+    <!-- UPF -->
+    <rect x="738" y="478" width="124" height="86" rx="9" class="card"/>
+    <text x="800" y="508" class="nf" text-anchor="middle">UPF</text>
+    <text x="800" y="528" class="sub" text-anchor="middle">user plane</text>
+    <text x="800" y="546" class="port" text-anchor="middle">:8006</text>
+    <!-- PCF -->
+    <rect x="874" y="478" width="124" height="86" rx="9" class="card"/>
+    <text x="936" y="508" class="nf" text-anchor="middle">PCF</text>
+    <text x="936" y="528" class="sub" text-anchor="middle">policy</text>
+    <text x="936" y="546" class="port" text-anchor="middle">:8007</text>
+  </g>
+
+  <!-- orchestrator -> core (control) -->
+  <line x1="400" y1="296" x2="430" y2="438" stroke="#5e9bff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="318" y="400" class="lblb" text-anchor="middle">attach UEs · inject faults ↓</text>
+
+  <!-- core -> collector (telemetry up) -->
+  <path d="M 160 478 C 160 420, 180 360, 180 296" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+  <text x="120" y="400" class="lblg" text-anchor="middle">↑ scrape</text>
+
+  <!-- ============ LEGEND ============ -->
+  <text x="40" y="624" class="lbl" font-weight="700" font-size="12">FLOWS</text>
+  <line x1="40" y1="642" x2="74" y2="642" stroke="#5e9bff" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="82" y="646" class="sub">control / REST</text>
+  <line x1="210" y1="642" x2="244" y2="642" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+  <text x="252" y="646" class="sub">telemetry scrape</text>
+  <line x1="400" y1="642" x2="434" y2="642" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowAmber)"/>
+  <text x="442" y="646" class="sub">agent tool calls</text>
+
+  <text x="40" y="700" class="sub" font-size="12">All services run from a single shared image (SERVICE_NAME selects the role); the frontend builds separately. Default LLM provider is the keyless mock.</text>
+  <text x="40" y="722" class="sub" font-size="12">Deploy: docker compose up -d --build  ·  dashboard at http://localhost:5173</text>
+</svg>

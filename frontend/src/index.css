@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  background: #0b1120;
+  color: #c9d4e8;
+  font-family: 'Manrope', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* subtle top-down depth instead of CRT noise — calmer, more readable */
+body {
+  background-image: radial-gradient(1200px 500px at 50% -10%, rgba(94,155,255,0.06), transparent 70%);
+  background-attachment: fixed;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: #0b1120; }
+::-webkit-scrollbar-thumb { background: #2c3a59; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #3c4d72; }
+
+.cursor-blink::after { content: '▊'; color: #5e9bff; animation: blink 1s step-end infinite; margin-left: 2px; }
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+.data-stream {
+  background: linear-gradient(90deg, transparent 0%, rgba(94,155,255,0.55) 50%, transparent 100%);
+  background-size: 200% 100%; animation: stream 1.5s linear infinite;
+}
+@keyframes stream { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}

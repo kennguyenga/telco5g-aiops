@@ -1,0 +1,198 @@
+services:
+  # ─── 5G Core Network Functions ──────────────────────────────────────
+  # Host ports are renumbered to 18001-18007 + 19000-19003 to avoid
+  # conflicts with anything else on your machine. Container ports stay at
+  # 8001-8007 + 9000-9003 so internal Docker DNS calls work unchanged.
+  # Browser hits the frontend at http://localhost:5173 as before.
+
+  nrf:
+    build: .
+    image: aiops5g-core:latest
+    environment: { SERVICE_NAME: nrf, PORT: 8001 }
+    ports: ["18001:8001"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  udm:
+    image: aiops5g-core:latest
+    environment: { SERVICE_NAME: udm, PORT: 8003 }
+    ports: ["18003:8003"]
+    depends_on: { nrf: { condition: service_healthy } }
+
+  ausf:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: ausf
+      PORT: 8002
+      NRF_URL: http://nrf:8001
+      UDM_URL: http://udm:8003
+    ports: ["18002:8002"]
+    depends_on:
+      udm: { condition: service_started }
+      nrf: { condition: service_healthy }
+
+  amf:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: amf
+      PORT: 8004
+      NRF_URL: http://nrf:8001
+      AUSF_URL: http://ausf:8002
+      UDM_URL: http://udm:8003
+      SMF_URL: http://smf:8005
+    ports: ["18004:8004"]
+    depends_on:
+      ausf: { condition: service_started }
+      udm: { condition: service_started }
+
+  smf:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: smf
+      PORT: 8005
+      NRF_URL: http://nrf:8001
+      PCF_URL: http://pcf:8007
+      UPF_URL: http://upf:8006
+    ports: ["18005:8005"]
+    depends_on:
+      nrf: { condition: service_healthy }
+      pcf: { condition: service_started }
+      upf: { condition: service_started }
+
+  upf:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: upf
+      PORT: 8006
+      NRF_URL: http://nrf:8001
+    ports: ["18006:8006"]
+    depends_on: { nrf: { condition: service_healthy } }
+
+  pcf:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: pcf
+      PORT: 8007
+      NRF_URL: http://nrf:8001
+    ports: ["18007:8007"]
+    depends_on: { nrf: { condition: service_healthy } }
+
+  # ─── Telemetry & Control Plane ──────────────────────────────────────
+  collector:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: collector
+      PORT: 9000
+      NRF_URL: http://nrf:8001
+      AUSF_URL: http://ausf:8002
+      UDM_URL: http://udm:8003
+      AMF_URL: http://amf:8004
+      SMF_URL: http://smf:8005
+      UPF_URL: http://upf:8006
+      PCF_URL: http://pcf:8007
+    ports: ["19000:9000"]
+    depends_on:
+      amf: { condition: service_started }
+      smf: { condition: service_started }
+
+  orchestrator:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: orchestrator
+      PORT: 9001
+      NRF_URL: http://nrf:8001
+      AUSF_URL: http://ausf:8002
+      UDM_URL: http://udm:8003
+      AMF_URL: http://amf:8004
+      SMF_URL: http://smf:8005
+      UPF_URL: http://upf:8006
+      PCF_URL: http://pcf:8007
+    ports: ["19001:9001"]
+    depends_on:
+      amf: { condition: service_started }
+
+  ml_engine:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: ml_engine
+      PORT: 9002
+      COLLECTOR_URL: http://collector:9000
+    ports: ["19002:9002"]
+    depends_on: [collector]
+
+  llm_agent:
+    image: aiops5g-core:latest
+    environment:
+      SERVICE_NAME: llm_agent
+      PORT: 9003
+      COLLECTOR_URL: http://collector:9000
+      ORCHESTRATOR_URL: http://orchestrator:9001
+      # Provider: "mock" (no key, default), "gemini" (free), "ollama" (local), "anthropic" (paid)
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      # When the chosen provider has no key, fall back to the keyless mock
+      # playbook instead of erroring. Set to 0 to restore hard 503s.
+      LLM_FALLBACK_MOCK: ${LLM_FALLBACK_MOCK:-1}
+      # Gemini config (when LLM_PROVIDER=gemini) — get free key at https://aistudio.google.com/apikey
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      # Ollama config (when LLM_PROVIDER=ollama)
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+      OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT:-180}
+      # Anthropic config (when LLM_PROVIDER=anthropic)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-haiku-4-5}
+    ports: ["19003:9003"]
+    depends_on: [collector, orchestrator]
+
+  # ─── Ollama (local LLM runtime) ────────────────────────────────────
+  # ONLY runs when LLM_PROVIDER=ollama AND you've added --profile ollama
+  # to docker compose. Uses ~6GB RAM; not needed for Gemini or Anthropic.
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    ports: ["11434:11434"]
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: 5m
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Ollama model bootstrapper (one-shot model pull) ───────────────
+  ollama_init:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Pulling ${OLLAMA_MODEL:-llama3.1:8b} (this may take ~5min on first run)..."
+        ollama pull ${OLLAMA_MODEL:-llama3.1:8b}
+        echo "Model ready."
+    restart: "no"
+
+  # ─── Frontend ───────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+    ports: ["5173:80"]
+    depends_on: [orchestrator, collector, ml_engine, llm_agent]
+
+# ─── Volumes ─────────────────────────────────────────────────────────
+volumes:
+  ollama_models:
+    # Persists the downloaded LLM weights across container restarts.
+    # Without this, each `docker compose down` would force a re-download (~5GB).
