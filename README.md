@@ -273,10 +273,12 @@ It's a portfolio demonstration of:
 
 ---
 
+## License
+
+See LICENSE.
+
+---
+
 ## Contact
 
 [Kenny Nguyen](https://github.com/kennguyenga)
-#   t e l c o 5 g - a i o p s  
- #   i n f r a - m i n d - a i o p s  
- #   t e l c o 5 g - a i o p s  
- 
